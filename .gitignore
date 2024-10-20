@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.DS_STORE
+.env
+.idea
+# Default ignored files
+/shelf/
+/workspace.xml
+# Editor-based HTTP Client requests
+/httpRequests/
