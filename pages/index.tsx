@@ -8,6 +8,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from './api/auth/[...nextauth]';
 import prisma from '../lib/prisma';
 import { Investment } from '@prisma/client';
+import { ColDef } from '@ag-grid-community/core';
 
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -50,11 +51,11 @@ const Stocks: React.FC<Props> = ({investments}) => {
             sortable: false,
             filter: false,
             width: 100
-        },
-        {field: 'stockName', headerName: 'Stock Name'},
-        {field: 'quantity', headerName: 'Quantity'},
-        {field: 'buyPrice', headerName: 'Buy Price'},
-        {field: 'currentPrice', headerName: 'Current Price (editable)', editable: true},
+        } as ColDef,
+        {field: 'stockName', headerName: 'Stock Name'} as any,
+        {field: 'quantity', headerName: 'Quantity'} as any,
+        {field: 'buyPrice', headerName: 'Buy Price'} as any,
+        {field: 'currentPrice', headerName: 'Current Price (editable)', editable: true} as any,
     ]);
 
     const calculateSummary = (data: Investment[]) => {
@@ -81,9 +82,9 @@ const Stocks: React.FC<Props> = ({investments}) => {
     );
 
     const [summaryColDefs] = useState([
-        { field: 'totalInvestment', headerName: 'Total Investment' },
-        { field: 'totalCurrentValue', headerName: 'Total Current Value' },
-        { field: 'totalGainLoss', headerName: 'Total Gain/Loss' },
+        { field: 'totalInvestment', headerName: 'Total Investment' } as any,
+        { field: 'totalCurrentValue', headerName: 'Total Current Value' } as any,
+        { field: 'totalGainLoss', headerName: 'Total Gain/Loss' } as any,
     ]);
 
     const handleCellValueChanged = async (event: any) => {
