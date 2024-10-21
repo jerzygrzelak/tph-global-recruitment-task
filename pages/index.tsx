@@ -1,89 +1,110 @@
 import React, { useState } from 'react'
-import { GetStaticProps } from "next"
-import Layout from "../components/Layout"
-import Post, { PostProps } from "../components/Post"
+import { GetServerSideProps } from 'next'
+import Layout from '../components/Layout'
 import { AgGridReact } from 'ag-grid-react';
-import { ColDef } from 'ag-grid-community';
-import "ag-grid-community/styles/ag-grid.css";
-import "ag-grid-community/styles/ag-theme-alpine.css";
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+import { getServerSession } from 'next-auth';
+import { authOptions } from './api/auth/[...nextauth]';
+import prisma from '../lib/prisma';
+import { Investment } from '@prisma/client';
 
 
-export const getStaticProps: GetStaticProps = async () => {
+export const getServerSideProps: GetServerSideProps = async (context) => {
+    const session = await getServerSession(context.req, context.res, authOptions);
 
-  const feed = [
-    {
-      id: "1",
-      title: "Prisma is the perfect ORM for Next.js",
-      content: "[Prisma](https://github.com/prisma/prisma) and Next.js go _great_ together!",
-      published: false,
-      author: {
-        name: "Nikolas Burk",
-        email: "burk@prisma.io",
-      },
-    },
-  ]
-  return {
-    props: { feed },
-    revalidate: 10
-  }
+    if (!session) {
+        return {
+            redirect: {
+                destination: '/auth/login',
+                permanent: false,
+            },
+        };
+    }
+
+    const investments = await prisma.investment.findMany({
+        where: {
+            ownerId: session.user.id,
+        },
+    });
+
+    return {
+        props: {
+            investments,
+        },
+    };
 }
 
 type Props = {
-  feed: PostProps[]
-}
+    investments: Investment[];
+};
 
-const Blog: React.FC<Props> = (props) => {
+const Stocks: React.FC<Props> = ({investments}) => {
 
-    const [rowData, setRowData] = useState([
-      { make: "Tesla", model: "Model Y", price: 64950, electric: true },
-      { make: "Ford", model: "F-Series", price: 33850, electric: false },
-      { make: "Toyota", model: "Corolla", price: 29600, electric: false },
+    const [stockRowData] = useState(investments);
+
+    const [stockColDefs] = useState([
+        {
+            headerName: 'No.',
+            valueGetter: 'node.rowIndex + 1', // Row index starts from 0, so add 1 for display
+            sortable: false,
+            filter: false,
+            width: 100
+        },
+        {field: 'stockName', headerName: 'Stock Name'},
+        {field: 'quantity', headerName: 'Quantity'},
+        {field: 'buyPrice', headerName: 'Buy Price'},
+        {field: 'currentPrice', headerName: 'Current Price (editable)', editable: true},
     ]);
 
-    const [colDefs, setColDefs] = useState([
-      { field: "make" } as ColDef,
-      { field: "model" } as ColDef,
-      { field: "price" } as ColDef,
-      { field: "electric" } as ColDef
+    const totalInvestment = investments.reduce((sum, investment) => sum + (investment.quantity * investment.buyPrice), 0);
+    const totalCurrentValue = investments.reduce((sum, investment) => sum + (investment.quantity * investment.currentPrice), 0);
+    const totalGainLoss = totalCurrentValue - totalInvestment;
+
+    const summaryRowData = [
+        {
+            totalInvestment: totalInvestment,
+            totalCurrentValue: totalCurrentValue,
+            totalGainLoss: totalGainLoss
+        }
+    ];
+
+    const [summaryColDefs] = useState([
+        { field: 'totalInvestment', headerName: 'Total Investment' },
+        { field: 'totalCurrentValue', headerName: 'Total Current Value' },
+        { field: 'totalGainLoss', headerName: 'Total Gain/Loss' },
     ]);
 
-  return (
-    <Layout>
-      <div className="page">
-        <h1>Public Feed</h1>
-        <main>
-          <div
-              className="ag-theme-alpine"
-              style={{height: '600px'}}
-          >
-            <AgGridReact
-                rowData={rowData}
-                columnDefs={colDefs}
-            ></AgGridReact>
-          </div>
-          {/*{props.feed.map((post) => (*/}
-          {/*    <div key={post.id} className="post">*/}
-          {/*      <Post post={post}/>*/}
-          {/*    </div>*/}
-          {/*))}*/}
-        </main>
-      </div>
-      <style jsx>{`
-        .post {
-          background: white;
-          transition: box-shadow 0.1s ease-in;
-        }
-
-        .post:hover {
-          box-shadow: 1px 1px 3px #aaa;
-        }
-
-        .post + .post {
-          margin-top: 2rem;
-        }
-      `}</style>
-    </Layout>
-  )
+    return (
+        <Layout>
+            <div className="page flex flex-column w-full align-items-center">
+                <div className='flex flex-column w-6'>
+                    <h1 className="align-self-start">Stocks</h1>
+                    <div
+                        className="ag-theme-alpine"
+                        style={{height: '190px'}}
+                    >
+                        <AgGridReact
+                            rowData={stockRowData}
+                            columnDefs={stockColDefs}
+                        ></AgGridReact>
+                    </div>
+                </div>
+                <div className='flex flex-column w-6'>
+                    <h1 className="align-self-start">Summary</h1>
+                    <div
+                        className="ag-theme-alpine w-8"
+                        style={{height: '120px'}}
+                    >
+                        <AgGridReact
+                            rowData={summaryRowData}
+                            columnDefs={summaryColDefs}
+                        ></AgGridReact>
+                    </div>
+                </div>
+            </div>
+        </Layout>
+    )
 }
 
-export default Blog
+export default Stocks
