@@ -41,7 +41,7 @@ type Props = {
 
 const Stocks: React.FC<Props> = ({investments}) => {
 
-    const [stockRowData] = useState(investments);
+    const [stockRowData, setStockRowData] = useState(investments);
 
     const [stockColDefs] = useState([
         {
@@ -57,23 +57,60 @@ const Stocks: React.FC<Props> = ({investments}) => {
         {field: 'currentPrice', headerName: 'Current Price (editable)', editable: true},
     ]);
 
-    const totalInvestment = investments.reduce((sum, investment) => sum + (investment.quantity * investment.buyPrice), 0);
-    const totalCurrentValue = investments.reduce((sum, investment) => sum + (investment.quantity * investment.currentPrice), 0);
-    const totalGainLoss = totalCurrentValue - totalInvestment;
+    const calculateSummary = (data: Investment[]) => {
+        const totalInvestment = data.reduce(
+            (sum, investment) => sum + investment.quantity * investment.buyPrice,
+            0
+        );
+        const totalCurrentValue = data.reduce(
+            (sum, investment) => sum + investment.quantity * investment.currentPrice,
+            0
+        );
+        const totalGainLoss = totalCurrentValue - totalInvestment;
+        return [
+            {
+                totalInvestment,
+                totalCurrentValue,
+                totalGainLoss,
+            },
+        ];
+    };
 
-    const summaryRowData = [
-        {
-            totalInvestment: totalInvestment,
-            totalCurrentValue: totalCurrentValue,
-            totalGainLoss: totalGainLoss
-        }
-    ];
+    const [summaryRowData, setSummaryRowData] = useState(() =>
+        calculateSummary(stockRowData)
+    );
 
     const [summaryColDefs] = useState([
         { field: 'totalInvestment', headerName: 'Total Investment' },
         { field: 'totalCurrentValue', headerName: 'Total Current Value' },
         { field: 'totalGainLoss', headerName: 'Total Gain/Loss' },
     ]);
+
+    const handleCellValueChanged = async (event: any) => {
+        const updatedData = [...stockRowData];
+        const rowIndex = event.node.rowIndex;
+        const investment = updatedData[rowIndex];
+        investment.currentPrice = event.newValue;
+
+        setStockRowData(updatedData);
+        setSummaryRowData(calculateSummary(updatedData));
+
+        // Send updated currentPrice to the server
+        try {
+            await fetch('/api/investment/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: investment.id,
+                    currentPrice: investment.currentPrice,
+                }),
+            });
+        } catch (error) {
+            console.error('Error updating current price:', error);
+        }
+    };
 
     return (
         <Layout>
@@ -87,6 +124,7 @@ const Stocks: React.FC<Props> = ({investments}) => {
                         <AgGridReact
                             rowData={stockRowData}
                             columnDefs={stockColDefs}
+                            onCellValueChanged={handleCellValueChanged}
                         ></AgGridReact>
                     </div>
                 </div>

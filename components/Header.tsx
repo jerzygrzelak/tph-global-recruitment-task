@@ -10,8 +10,7 @@ const Header: React.FC = () => {
                 <p>
                     {session?.user.name} ({session?.user.email})
                 </p>
-                <Button onClick={() => signOut()} label="Log out" icon="pi pi-sign-out" className="p-button-sm p-mt-2"
-                   />
+                <Button onClick={() => signOut()} label="Log out" icon="pi pi-sign-out" className="p-button-sm p-mt-2"/>
             </div>
     );
 };
