@@ -14,7 +14,8 @@ You can access the app at: https://tph-global-recruitment-task.vercel.app. \
 :white_check_mark: Updates in table #1 are reflected in table #2 and persisted in the database. \
 :white_check_mark: Authentication implemented using NextAuth.js, application can only be accessed after log-in. \
 :white_check_mark: Data is stored in a Vercel PostgreSQL database. \
-:white_check_mark: Application is deployed to Vercel.
+:white_check_mark: Stock data can be exported to CSV. \
+:white_check_mark: Application is deployed to Vercel. 
 
 ### Local deployment and development:
 For local deployment and development, a new Vercel Postgres database would have to be created. \
@@ -25,3 +26,4 @@ Once the database is create tables and seed the database by running:
 npx prisma db push
 npx prisma db seed
 ````
+Then just run ``npm run dev``.

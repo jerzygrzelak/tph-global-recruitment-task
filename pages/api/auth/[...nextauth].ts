@@ -15,35 +15,29 @@ export const authOptions: AuthOptions = {
                 password: { label: "Password", type: "password" }
             },
             async authorize(credentials): Promise<any> {
-                // Find the user by email in the database
                 const user = await prisma.user.findUnique({
                     where: { email: credentials?.email }
                 });
-                console.log(user);
-                // If the user exists and provided a password
+
                 if (user && credentials?.password) {
-                    // Compare the provided password with the hashed password in the database
                     const isValidPassword = await bcrypt.compare(credentials.password, user.password);
 
-                    // If the password is valid, return the user object
                     if (isValidPassword) {
                         return user;
                     }
                 }
-                // Return null if the authentication failed
                 return null;
             }
         })
     ],
     pages: {
-        signIn: '/auth/login', // Custom sign-in page if needed
+        signIn: '/auth/login',
     },
     session: {
-        strategy: "jwt", // Use JWT for session management
+        strategy: "jwt",
     },
     callbacks: {
         async jwt({ token, user }) {
-            // Attach user info to the JWT token
             if (user) {
                 token.id = user.id;
                 token.email = user.email;
@@ -62,5 +56,3 @@ export const authOptions: AuthOptions = {
 };
 
 export default NextAuth(authOptions);
-
-// export { handler as GET, handler as POST, authOptions }

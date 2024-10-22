@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { GetServerSideProps } from 'next'
 import Layout from '../components/Layout'
 import { AgGridReact } from 'ag-grid-react';
@@ -41,13 +41,14 @@ type Props = {
 };
 
 const Stocks: React.FC<Props> = ({investments}) => {
+    const gridRef = useRef<AgGridReact>(null); // Reference for the grid
 
     const [stockRowData, setStockRowData] = useState(investments);
 
     const [stockColDefs] = useState([
         {
             headerName: 'No.',
-            valueGetter: 'node.rowIndex + 1', // Row index starts from 0, so add 1 for display
+            valueGetter: 'node.rowIndex + 1',
             sortable: false,
             filter: false,
             width: 100
@@ -96,7 +97,6 @@ const Stocks: React.FC<Props> = ({investments}) => {
         setStockRowData(updatedData);
         setSummaryRowData(calculateSummary(updatedData));
 
-        // Send updated currentPrice to the server
         try {
             await fetch('/api/investment/update', {
                 method: 'POST',
@@ -112,30 +112,45 @@ const Stocks: React.FC<Props> = ({investments}) => {
             console.error('Error updating current price:', error);
         }
     };
+    const handleExportAsCSV = () => {
+        if (gridRef.current) {
+            gridRef.current.api.exportDataAsCsv({fileName: 'stock_data'});
+        }
+    };
 
     return (
         <Layout>
             <div className="page flex flex-column w-full align-items-center">
-                <div className='flex flex-column w-6'>
-                    <h1 className="align-self-start">Stocks</h1>
+                <div className="flex flex-column w-6">
+                    <div className='m-2 flex flex-row align-items-center justify-content-between'>
+                        <h1 className="m-0">Stocks</h1>
+                        <button
+                            onClick={handleExportAsCSV}
+                            className="p-button p-component p-button-primary p-mt-2"
+                            style={{alignSelf: 'flex-end'}}
+                        >
+                            Export to CSV
+                        </button>
+                    </div>
                     <div
                         className="ag-theme-alpine"
                         style={{height: '190px'}}
                     >
                         <AgGridReact
+                            ref={gridRef}
                             rowData={stockRowData}
                             columnDefs={stockColDefs}
                             onCellValueChanged={handleCellValueChanged}
                         ></AgGridReact>
                     </div>
                 </div>
-                <div className='flex flex-column w-6'>
-                    <h1 className="align-self-start">Summary</h1>
+                <div className="flex flex-column w-6">
+                    <h1 className="m-2 align-self-start">Summary</h1>
                     <div
                         className="ag-theme-alpine w-8"
                         style={{height: '120px'}}
                     >
-                        <AgGridReact
+                    <AgGridReact
                             rowData={summaryRowData}
                             columnDefs={summaryColDefs}
                         ></AgGridReact>
