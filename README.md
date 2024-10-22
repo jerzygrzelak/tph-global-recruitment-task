@@ -2,11 +2,20 @@
 Recruitment task for Fullstack Developer position in a project for TPH Global.
 
 ---
+
 ### Running the application
 The application is deployed on Vercel and utilizes Vercel PostgreSQL database. \
 You can access the app at: https://tph-global-recruitment-task.vercel.app. \
 <b>Username:</b> <i>quicktrader@crypto.com</i> \
 <b>Password:</b> <i>123</i>
+
+---
+
+### Cypress E2E tests.
+To open Cypress suite run: ``npm run cypress:open``. \
+To run Cypress tests run: ``npm run cypress:run``.
+
+---
 
 ### Requirements checklist:
 :white_check_mark: Table #1 (using AG Grid) displaying list of investments with details. \
@@ -15,7 +24,10 @@ You can access the app at: https://tph-global-recruitment-task.vercel.app. \
 :white_check_mark: Authentication implemented using NextAuth.js, application can only be accessed after log-in. \
 :white_check_mark: Data is stored in a Vercel PostgreSQL database. \
 :white_check_mark: Stock data can be exported to CSV. \
+:white_check_mark: Implemented E2E tests. \
 :white_check_mark: Application is deployed to Vercel. 
+
+---
 
 ### Local deployment and development:
 For local deployment and development, a new Vercel Postgres database would have to be created. \
