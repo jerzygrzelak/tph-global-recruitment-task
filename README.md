@@ -33,7 +33,7 @@ To run Cypress tests run: ``npm run cypress:run``.
 For local deployment and development, a new Vercel Postgres database would have to be created. \
 Blueprint for <b>.env</b> file can be found in <b>.env.example</b> file. Guide on how to create a Vercel Postgres DB 
 can be found <a href=https://vercel.com/docs/storage/vercel-postgres/quickstart>here</a>.
-Once the database is create tables and seed the database by running:
+Once the database is set up, create tables and seed the database by running:
 ````
 npx prisma db push
 npx prisma db seed
