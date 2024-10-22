@@ -2,6 +2,9 @@
   "name": "investment-tracking-app",
   "version": "1.0.0",
   "description": "",
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
   "scripts": {
     "dev": "next",
     "build": "prisma generate && next build",
@@ -31,6 +34,7 @@
     "@types/node": "17.0.14",
     "@types/react": "17.0.38",
     "prisma": "^5.21.1",
+    "ts-node": "^10.9.2",
     "typescript": "4.7.3"
   }
 }
